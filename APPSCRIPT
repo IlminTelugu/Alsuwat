@@ -1,0 +1,76 @@
+/**
+ * Google Apps Script for Transport Logistics Form
+ * Sheet: alsuwat
+ * Sheet ID: 1cxXq3577ZTJjQXinESNp2eP46g6-5KExuXciGQ1zc90
+ * 
+ * SETUP INSTRUCTIONS:
+ * 1. Open your Google Sheet: https://docs.google.com/spreadsheets/d/1cxXq3577ZTJjQXinESNp2eP46g6-5KExuXciGQ1zc90/edit
+ * 2. Go to Extensions → Apps Script
+ * 3. Delete any existing code and paste this entire file
+ * 4. Click "Deploy" → "New deployment"
+ * 5. Select type: "Web app"
+ * 6. Set "Execute as": Me
+ * 7. Set "Who has access": Anyone
+ * 8. Click "Deploy" and copy the Web App URL
+ * 9. Paste the URL in your Lovable form (LogisticsForm.tsx line 92)
+ */
+
+function doPost(e) {
+  try {
+    // Parse incoming JSON data
+    const data = JSON.parse(e.postData.contents);
+    
+    // Open the specific sheet
+    const ss = SpreadsheetApp.openById('1cxXq3577ZTJjQXinESNp2eP46g6-5KExuXciGQ1zc90');
+    const sheet = ss.getSheetByName('alsuwat');
+    
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        message: 'Sheet "alsuwat" not found'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Prepare row data matching your column structure
+    const rowData = [
+      data.datetime || new Date().toISOString(),  // A: Timestamp
+      data.driverName || '',                       // B: Driver Name
+      data.truckNo || '',                          // C: Truck No
+      data.contact || '',                          // D: Contact No
+      data.packages || '',                         // E: PKG NO (comma-separated)
+      data.port || '',                             // F: Port
+      data.loadingLocation || '',                  // G: Loading Location
+      data.loadingDate || '',                      // H: Loading Date
+      data.offLoadingLocation || '',               // I: Offloading Location
+      data.offLoadingDate || '',                   // J: Off Date
+      data.remarks || ''                           // K: Remarks
+    ];
+    
+    // Append the row to the sheet
+    sheet.appendRow(rowData);
+    
+    // Return success response with CORS headers
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      message: 'Data successfully added to Google Sheets',
+      timestamp: new Date().toISOString()
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    // Return error response
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: 'Error: ' + error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Handle GET requests (for testing)
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'online',
+    message: 'Transport Logistics Form API is running',
+    sheet: 'alsuwat',
+    timestamp: new Date().toISOString()
+  })).setMimeType(ContentService.MimeType.JSON);
+}
